@@ -1,0 +1,21 @@
+---
+- name: Prepare all Kubernetes nodes
+  hosts: k8s_cluster
+  become: true
+  roles:
+    - common
+    - containerd
+    - kubernetes
+
+- name: Initialize Kubernetes master
+  hosts: k8s_masters
+  become: true
+  roles:
+    - master
+    - cni
+
+- name: Join Kubernetes workers
+  hosts: k8s_workers
+  become: true
+  roles:
+    - worker

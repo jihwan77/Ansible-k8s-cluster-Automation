@@ -1,0 +1,29 @@
+---
+- name: Add Docker CE repository
+  command: yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
+  args:
+    creates: /etc/yum.repos.d/docker-ce.repo
+
+- name: Install containerd
+  dnf:
+    name: containerd.io
+    state: present
+
+- name: Create containerd config directory
+  file:
+    path: /etc/containerd
+    state: directory
+    mode: '0755'
+
+- name: Generate default containerd config
+  shell: containerd config default > /etc/containerd/config.toml
+
+- name: Set SystemdCgroup true
+  shell: sed -i 's/SystemdCgroup = false/SystemdCgroup = true/' /etc/containerd/config.toml
+
+- name: Enable and restart containerd
+  systemd:
+    name: containerd
+    enabled: true
+    state: restarted
+    daemon_reload: true

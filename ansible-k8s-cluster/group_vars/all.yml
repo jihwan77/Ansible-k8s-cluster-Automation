@@ -1,0 +1,21 @@
+---
+
+kubernetes_version_repo: "v1.30"
+pod_network_cidr: "20.96.0.0/12"
+
+control_plane_endpoint: "172.16.1.211"
+apiserver_advertise_address: "172.16.1.211"
+
+k8s_hosts:
+  - ip: "172.16.1.211"
+    name: "k8s-master"
+  - ip: "172.16.1.212"
+    name: "k8s-worker1"
+  - ip: "172.16.1.213"
+    name: "k8s-worker2"
+
+calico_manifest_url: "https://raw.githubusercontent.com/jihwan77/install/main/under-thesea/k8s-cluster-1.30/calico-3.28.2/calico.yaml"
+calico_custom_manifest_url: "https://raw.githubusercontent.com/jihwan77/install/main/under-thesea/k8s-cluster-1.30/calico-3.28.2/calico-custom.yaml"
+
+install_dashboard: false
+install_metrics_server: false

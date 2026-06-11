@@ -1,0 +1,35 @@
+---
+- name: Add Kubernetes repository
+  copy:
+    dest: /etc/yum.repos.d/kubernetes.repo
+    content: |
+      [kubernetes]
+      name=Kubernetes
+      baseurl=https://pkgs.k8s.io/core:/stable:/{{ kubernetes_version_repo }}/rpm/
+      enabled=1
+      gpgcheck=1
+      gpgkey=https://pkgs.k8s.io/core:/stable:/{{ kubernetes_version_repo }}/rpm/repodata/repomd.xml.key
+      exclude=kubelet kubeadm kubectl cri-tools kubernetes-cni
+
+- name: Install kubelet, kubeadm, kubectl
+  dnf:
+    name:
+      - kubelet
+      - kubeadm
+      - kubectl
+    state: present
+    disable_excludes: kubernetes
+
+- name: Configure kubelet node IP
+  copy:
+    dest: /etc/sysconfig/kubelet
+    content: |
+      KUBELET_EXTRA_ARGS=--node-ip={{ node_ip | default(ansible_host) }}
+    mode: '0644'
+
+- name: Restart and enable kubelet
+  systemd:
+    name: kubelet
+    enabled: true
+    state: restarted
+    daemon_reload: true

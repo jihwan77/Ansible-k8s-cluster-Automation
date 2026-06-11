@@ -1,0 +1,54 @@
+---
+- name: Check if Kubernetes control plane is already initialized
+  stat:
+    path: /etc/kubernetes/admin.conf
+  register: kubeadm_init_status
+
+- name: Initialize Kubernetes control plane
+  command: >
+    kubeadm init
+    --pod-network-cidr={{ pod_network_cidr }}
+    --apiserver-advertise-address={{ apiserver_advertise_address }}
+  when: not kubeadm_init_status.stat.exists
+
+- name: Create .kube directory for ansible user
+  file:
+    path: /home/ansible/.kube
+    state: directory
+    owner: ansible
+    group: ansible
+    mode: '0755'
+
+- name: Copy admin.conf to ansible user kubeconfig
+  copy:
+    src: /etc/kubernetes/admin.conf
+    dest: /home/ansible/.kube/config
+    remote_src: true
+    owner: ansible
+    group: ansible
+    mode: '0600'
+
+- name: Create .kube directory for root
+  file:
+    path: /root/.kube
+    state: directory
+    mode: '0755'
+
+- name: Copy admin.conf to root kubeconfig
+  copy:
+    src: /etc/kubernetes/admin.conf
+    dest: /root/.kube/config
+    remote_src: true
+    mode: '0600'
+
+- name: Enable kubectl autocomplete and alias for ansible user
+  blockinfile:
+    path: /home/ansible/.bashrc
+    marker: "# {mark} ANSIBLE MANAGED KUBECTL"
+    block: |
+      source <(kubectl completion bash)
+      alias k=kubectl
+      complete -o default -F __start_kubectl k
+    create: true
+    owner: ansible
+    group: ansible

@@ -1,0 +1,21 @@
+---
+- name: Check if Calico namespace exists
+  command: kubectl get namespace calico-system
+  environment:
+    KUBECONFIG: /etc/kubernetes/admin.conf
+  register: calico_ns
+  failed_when: false
+  changed_when: false
+
+- name: Install Calico manifest
+  command: kubectl apply --server-side -f {{ calico_manifest_url }}
+  environment:
+    KUBECONFIG: /etc/kubernetes/admin.conf
+  when: calico_ns.rc != 0
+
+- name: Install Calico custom manifest
+  command: kubectl apply --server-side -f {{ calico_custom_manifest_url }}
+  environment:
+    KUBECONFIG: /etc/kubernetes/admin.conf
+  when: calico_ns.rc != 0
+
